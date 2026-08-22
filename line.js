@@ -70,6 +70,23 @@ export class Line {
         return this.points[index].y
     }
 
+    hexToRgb(hex){
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 255, g: 255, b: 255 }
+    }
+
+    darkenColor(hex, factor) {
+        const rgb = this.hexToRgb(hex)
+        const r = Math.max(0, Math.floor(rgb.r * factor))
+        const g = Math.max(0, Math.floor(rgb.g * factor))
+        const b = Math.max(0, Math.floor(rgb.b * factor))
+        return `rgb(${r}, ${g}, ${b})`
+    }
+
     draw(ctx){
         ctx.beginPath()
         ctx.moveTo(this.points[0].x, this.points[0].y)
@@ -80,18 +97,40 @@ export class Line {
         ctx.lineTo(this.stageWidth, this.stageHeight)
         ctx.lineTo(0, this.stageHeight)
         ctx.closePath()
-        ctx.fillStyle = "black"
+        
+        if (this.energy > 0.01) {
+            // Create gradient with one color range (bright to dark)
+            const gradient = ctx.createLinearGradient(0, this.yPos - 50, 0, this.yPos + 50)
+            gradient.addColorStop(0, this.activeColor)
+            gradient.addColorStop(1, this.darkenColor(this.activeColor, 0.5))
+            ctx.fillStyle = gradient
+        } else {
+            ctx.fillStyle = "black"
+        }
         ctx.fill()
 
-        ctx.beginPath()
-        ctx.strokeStyle = this.activeColor
-        ctx.lineWidth = this.lineWidth
-        ctx.moveTo(this.points[0].x, this.points[0].y)
-        for(let i = 1 ; i < this.points.length ; i++){
-            ctx.lineTo(this.points[i].x, this.points[i].y)
+        if (this.energy <= 0.01) {
+            ctx.beginPath()
+            
+            // Create radial gradient from center
+            const centerX = this.stageWidth / 2
+            const centerY = this.stageHeight / 2
+            const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY)
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius)
+            
+            // Grayscale at center, color at edges
+            const rgb = this.hexToRgb(this.activeColor)
+            gradient.addColorStop(0, `rgb(128, 128, 128)`) // Grayscale center
+            gradient.addColorStop(1, this.activeColor) // Full color at edges
+            
+            ctx.strokeStyle = gradient
+            ctx.lineWidth = this.lineWidth
+            ctx.moveTo(this.points[0].x, this.points[0].y)
+            for(let i = 1 ; i < this.points.length ; i++){
+                ctx.lineTo(this.points[i].x, this.points[i].y)
+            }
+            ctx.stroke()
         }
-
-        ctx.stroke()
     }
 
 }

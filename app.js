@@ -89,9 +89,32 @@ class App{
         this.ctx.drawImage(this.image, x, y, width, height)
     }
 
+    drawPlusBackground(){
+        const centerX = this.stageWidth / 2
+        const centerY = this.stageHeight / 2
+        const plusSize = Math.min(this.stageWidth, this.stageHeight) * 0.3
+        const strokeWidth = 40
+
+        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"
+        this.ctx.lineWidth = strokeWidth
+        this.ctx.lineCap = "round"
+
+        // Vertical line of plus
+        this.ctx.beginPath()
+        this.ctx.moveTo(centerX, centerY - plusSize)
+        this.ctx.lineTo(centerX, centerY + plusSize)
+        this.ctx.stroke()
+
+        // Horizontal line of plus
+        this.ctx.beginPath()
+        this.ctx.moveTo(centerX - plusSize, centerY)
+        this.ctx.lineTo(centerX + plusSize, centerY)
+        this.ctx.stroke()
+    }
+
     animate(t){
         this.ctx.clearRect( 0 , 0 , this.stageWidth , this.stageHeight)
-        this.drawImage()
+        this.drawPlusBackground()
         this.scheduleNotes(t)
         this.lineGroup.update()
         this.lineGroup.draw(this.ctx)
