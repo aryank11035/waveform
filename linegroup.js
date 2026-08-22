@@ -5,6 +5,7 @@ export class LineGroup {
         this.totalLines = 30;
         
         this.lines = []
+        this.collisionCounts = new Map()
 
         for(let i = 0 ; i < this.totalLines ; i++){
 
@@ -28,7 +29,7 @@ export class LineGroup {
             const waveDelay = (i - (centerLine - movingRadius)) * 1.2;
             const line = new Line(
                 color,
-                0.8,
+                0.6,
                 0,
                 i,
                 waveAmplitude,
@@ -53,6 +54,40 @@ export class LineGroup {
             const line = this.lines[i]
             line.draw(ctx)
         }
+    }
+
+    triggerNote(midi, velocity){
+        const centerLine = (this.totalLines - 1) / 2
+        const centerSpread = 5
+        const pitchProgress = Math.max(0, Math.min(1, (midi - 36) / 48))
+        const row = Math.round(centerLine + (0.5 - pitchProgress) * centerSpread * 2)
+        const lineIndex = Math.max(0, Math.min(this.totalLines - 1, row))
+        const color = `hsl(${35 + pitchProgress * 185} 80% 78%)`
+        const collisionCount = this.collisionCounts.get(lineIndex) || 0
+        const offset = collisionCount % 2 === 0 ? -3 : 3
+        this.collisionCounts.set(lineIndex, collisionCount + 1)
+
+        for(let bleed = -1 ; bleed <= 1 ; bleed++){
+            const target = lineIndex + bleed
+            if(target < 0 || target >= this.totalLines) continue
+            const bleedStrength = bleed === 0 ? 1 : 0.32
+            this.lines[target].addEnergy(velocity * bleedStrength, color, bleed === 0 ? offset : 0)
+        }
+    }
+
+    getLineIndexAt(x, y){
+        let closestLine = 0
+        let closestDistance = Infinity
+
+        for(let i = 0 ; i < this.lines.length ; i++){
+            const distance = Math.abs(this.lines[i].getYAt(x) - y)
+            if(distance < closestDistance){
+                closestDistance = distance
+                closestLine = i
+            }
+        }
+
+        return closestLine
     }
 
     update(){

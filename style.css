@@ -10,4 +10,23 @@ body{
 
 canvas{
     display: block;
+    cursor: crosshair;
 }
+
+#playNote{
+    position: fixed;
+    z-index: 2;
+    top: 16px;
+    left: 16px;
+    padding: 8px 14px;
+    color: white;
+    background: black;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+}
+
+#playNote:disabled{
+    cursor: wait;
+    opacity: 0.6;
+}
+
