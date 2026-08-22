@@ -4,7 +4,7 @@ export class Point {
         this.x = x
         this.y = y
         this.fixedY = y
-        this.speed = 0.003
+        this.speed = 0.004
         this.max = max
         this.waveCenter = waveCenter
         this.waveRadius = waveRadius
